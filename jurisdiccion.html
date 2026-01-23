@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Inventario – Jurisdicción</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #f4f6f9;
+      color: #333;
+    }
+
+    header {
+      background: #1f3a5f;
+      color: #fff;
+      padding: 14px 20px;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .container {
+      padding: 20px;
+    }
+
+    /* ===============================
+       Tabla inventario
+    ================================ */
+
+    .tabla-wrapper {
+      background: #fff;
+      border-radius: 6px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background: #e9ecef;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+
+    th, td {
+      padding: 10px;
+      font-size: 14px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+
+    tbody tr:hover {
+      background: #f1f5f9;
+    }
+
+    .tabla-scroll {
+      max-height: 65vh;
+      overflow-y: auto;
+    }
+
+    button {
+      padding: 6px 10px;
+      border: none;
+      border-radius: 4px;
+      background: #0069d9;
+      color: #fff;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    button:hover {
+      background: #0053ad;
+    }
+
+    /* ===============================
+       Botón flotante
+    ================================ */
+
+    .fab {
+      position: fixed;
+      bottom: 25px;
+      right: 25px;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: #28a745;
+      color: #fff;
+      font-size: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    }
+
+    .fab:hover {
+      background: #218838;
+    }
+
+    /* ===============================
+       Panel lateral (formulario)
+    ================================ */
+
+    .drawer {
+      position: fixed;
+      top: 0;
+      right: -520px;
+      width: 420px;
+      height: 100%;
+      background: #fff;
+      box-shadow: -4px 0 12px rgba(0,0,0,0.2);
+      padding: 20px;
+      transition: right 0.3s ease;
+      z-index: 100;
+    }
+
+    .drawer.open {
+      right: 0;
+    }
+
+    .drawer h3 {
+      margin-top: 0;
+      font-size: 18px;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 10px;
+    }
+
+    .drawer label {
+      display: block;
+      font-size: 13px;
+      margin-top: 12px;
+      margin-bottom: 4px;
+    }
+
+    .drawer input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .drawer-actions {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-sec {
+      background: #6c757d;
+    }
+
+    .btn-sec:hover {
+      background: #5a6268;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  Inventario por Lote – Jurisdicción
+</header>
+
+<div class="container">
+
+  <div class="tabla-wrapper">
+    <div class="tabla-scroll">
+      <table id="tablaInventario">
+        <thead>
+          <tr>
+            <th>Lote</th>
+            <th>Insumo</th>
+            <th>Disponible</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===============================
+     Botón flotante
+================================ -->
+<div class="fab" onclick="document.querySelector('.drawer').classList.add('open')">
+  +
+</div>
+
+<!-- ===============================
+     Panel lateral formulario
+================================ -->
+<div class="drawer">
+
+  <h3>Registrar salida</h3>
+
+  <form id="formSalida">
+    <input type="hidden" id="id_lote">
+    <input type="hidden" id="id_almacen">
+
+    <label>Lote seleccionado</label>
+    <div id="loteSeleccionado" style="font-size:13px;color:#555;">—</div>
+
+    <label>Cantidad</label>
+    <input type="number" id="cantidad" min="1" step="1" required>
+
+    <label>Folio</label>
+    <input type="text" id="folio" required>
+
+    <label>Fecha de salida</label>
+    <input type="date" id="fecha_movimiento" required>
+
+    <label>Observaciones</label>
+    <input type="text" id="observaciones">
+
+    <div class="drawer-actions">
+      <button type="submit">Guardar</button>
+      <button type="button" class="btn-sec"
+        onclick="document.querySelector('.drawer').classList.remove('open')">
+        Cancelar
+      </button>
+    </div>
+  </form>
+
+</div>
+
+<script type="module" src="js/jurisdiccion.js"></script>
+
+</body>
+</html>

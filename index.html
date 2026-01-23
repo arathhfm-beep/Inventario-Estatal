@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sistema Estatal de Inventarios</title>
+
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background:
+        linear-gradient(
+          rgba(0, 0, 0, 0.55),
+          rgba(0, 0, 0, 0.55)
+        ),
+        url("https://images.pexels.com/photos/6169020/pexels-photo-6169020.jpeg");
+      background-size: cover;
+      background-position: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .login-container {
+      background: #ffffff;
+      width: 420px;
+      padding: 30px 35px;
+      border-radius: 6px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    .header h2 {
+      margin: 0;
+      font-size: 20px;
+      color: #1f2d3d;
+    }
+
+    .header span {
+      display: block;
+      font-size: 13px;
+      color: #6c757d;
+      margin-top: 4px;
+    }
+
+    .info-text {
+      font-size: 13px;
+      color: #444;
+      margin: 15px 0 20px;
+      line-height: 1.5;
+      text-align: justify;
+    }
+
+    label {
+      font-size: 13px;
+      color: #333;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    input {
+      width: 100%;
+      padding: 9px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      margin-bottom: 18px;
+    }
+
+    button {
+      width: 100%;
+      padding: 11px;
+      font-size: 14px;
+      background-color: #0056b3;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    button:hover {
+      background-color: #004494;
+    }
+
+    .footer-text {
+      margin-top: 18px;
+      font-size: 11px;
+      color: #777;
+      text-align: center;
+      border-top: 1px solid #e0e0e0;
+      padding-top: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="login-container">
+
+    <div class="header">
+      <h2>Sistema Estatal de Inventarios</h2>
+      <span>Control, trazabilidad y supervisión</span>
+    </div>
+
+    <div class="info-text">
+      Plataforma institucional para el registro y control del inventario de
+      insumos por componente y jurisdicción.  
+      El acceso está restringido mediante clave autorizada, de acuerdo con el
+      nivel de responsabilidad asignado.
+    </div>
+
+    <label for="clave">Clave de acceso</label>
+    <input id="clave" placeholder="Ingrese su clave de acceso" />
+
+    <button onclick="entrar()">Ingresar</button>
+
+    <div class="footer-text">
+      Uso exclusivo para personal autorizado.<br>
+      Sistema de control y supervisión de inventarios.
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script>
+    const supa = supabase.createClient(
+      "https://mktpkopqrzelxigcayqe.supabase.co",
+      "sb_publishable_g6n-He351w0iWQfAtmHGkQ_pQm_wHO9"
+    );
+
+    async function entrar() {
+      const clave = document.getElementById("clave").value;
+
+      const { data, error } = await supa
+        .from("claves_acceso")
+        .select("*")
+        .eq("clave", clave)
+        .eq("activo", true)
+        .single();
+
+      if (error) {
+        alert("Clave inválida");
+        return;
+      }
+
+      sessionStorage.setItem("rol", data.rol);
+      sessionStorage.setItem("id_jurisdiccion", data.id_jurisdiccion);
+      sessionStorage.setItem("id_componente", data.id_componente);
+
+      if (data.rol === "JURISDICCION") location.href = "jurisdiccion.html";
+      if (data.rol === "COMPONENTE") location.href = "componente.html";
+      if (data.rol === "ESTATAL") location.href = "estatal.html";
+    }
+  </script>
+
+</body>
+</html>
+

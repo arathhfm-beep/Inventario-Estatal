@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventario Estatal – Global</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: #f4f6f9;
+      color: #1f2937;
+    }
+
+    /* ===============================
+       Layout
+    ============================== */
+
+    .container {
+      padding: 20px 24px;
+    }
+
+    h2 {
+      margin: 0 0 16px;
+      font-size: 22px;
+      font-weight: 600;
+    }
+
+    /* ===============================
+       Barra de filtros
+    ============================== */
+
+    .filters {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      background: #ffffff;
+      padding: 16px;
+      border-radius: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+      margin-bottom: 16px;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      min-width: 180px;
+    }
+
+    .filter-group label {
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: #374151;
+    }
+
+    select {
+      padding: 8px 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 14px;
+      background: #fff;
+    }
+
+    button {
+      padding: 9px 14px;
+      border-radius: 6px;
+      border: none;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    #btnExportar {
+      background: #2563eb;
+      color: #fff;
+      margin-left: auto;
+    }
+
+    #btnExportar:hover {
+      background: #1e40af;
+    }
+
+    /* ===============================
+       Tabla
+    ============================== */
+
+    .table-wrapper {
+      background: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+      overflow: hidden;
+    }
+
+    .table-scroll {
+      max-height: calc(100vh - 260px);
+      overflow-y: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    thead {
+      position: sticky;
+      top: 0;
+      background: #f9fafb;
+      z-index: 1;
+    }
+
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+    }
+
+    th {
+      font-weight: 600;
+      font-size: 13px;
+      color: #374151;
+      text-transform: uppercase;
+    }
+
+    tbody tr:hover {
+      background: #f3f4f6;
+    }
+
+    /* ===============================
+       Alertas de caducidad
+    ============================== */
+
+   td.alerta {
+  font-weight: 600;
+  text-align: center;
+}
+
+td.alerta-roja {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+td.alerta-ambar {
+  background: #fef3c7;
+  color: #92400e;
+}
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <h2>Inventario Estatal – Global</h2>
+
+    <!-- ===============================
+         Filtros
+    ============================== -->
+    <div class="filters">
+
+      <div class="filter-group">
+        <label>Componente</label>
+        <select id="filtroComponente">
+          <option value="">Todos</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Jurisdicción</label>
+        <select id="filtroJurisdiccion">
+          <option value="">Todas</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Estado de caducidad</label>
+        <select id="filtroCaducidad">
+          <option value="">Todos</option>
+          <option value="VENCIDO">Vencido</option>
+          <option value="PRÓXIMO">Próximo a vencer</option>
+          <option value="OK">Vigente</option>
+        </select>
+      </div>
+
+      <button id="btnExportar">Exportar CSV</button>
+    </div>
+
+    <!-- ===============================
+         Tabla
+    ============================== -->
+    <div class="table-wrapper">
+      <div class="table-scroll">
+        <table id="tablaInventarioEstatal">
+          <thead>
+            <tr>
+              <th>Componente</th>
+              <th>Jurisdicción</th>
+              <th>Insumo</th>
+              <th>Lote</th>
+              <th>Caducidad</th>
+              <th>Existencia</th>
+              <th>Alerta</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <script type="module" src="js/estatal.js"></script>
+</body>
+</html>

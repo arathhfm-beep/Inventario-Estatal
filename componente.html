@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Inventario del Componente</title>
+
+<style>
+  body {
+    margin: 0;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: #f4f6f9;
+    color: #333;
+  }
+
+  header {
+    background: #1f3a5f;
+    color: #fff;
+    padding: 14px 20px;
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  .container {
+    padding: 20px;
+  }
+
+  /* ===============================
+     Tabla
+  ================================ */
+
+  .card {
+    background: #fff;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    padding: 15px;
+  }
+
+  .tabla-scroll {
+    max-height: 65vh;
+    overflow-y: auto;
+    margin-top: 10px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  thead {
+    background: #e9ecef;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+
+  th, td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    font-size: 14px;
+    text-align: left;
+  }
+
+  tbody tr:hover {
+    background: #f1f5f9;
+  }
+
+  select, input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+
+  /* ===============================
+     Botones flotantes
+  ================================ */
+
+  .fab-group {
+    position: fixed;
+    right: 25px;
+    bottom: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .fab {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,.25);
+  }
+
+  .fab.insumo { background: #17a2b8; }
+  .fab.pres { background: #6f42c1; }
+  .fab.mov { background: #28a745; }
+
+  /* ===============================
+     Drawer (formularios)
+  ================================ */
+
+  .drawer {
+    position: fixed;
+    top: 0;
+    right: -480px;
+    width: 420px;
+    height: 100%;
+    background: #fff;
+    box-shadow: -4px 0 12px rgba(0,0,0,.2);
+    padding: 20px;
+    transition: right .3s ease;
+    z-index: 100;
+    overflow-y: auto;
+    box-sizing: border-box;
+  }
+
+  .drawer.open {
+    right: 0;
+  }
+
+  .drawer h3 {
+    margin-top: 0;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+  }
+
+  .drawer label {
+    margin-top: 10px;
+    display: block;
+    font-size: 13px;
+  }
+
+  .drawer button {
+    margin-top: 15px;
+    padding: 8px;
+    border: none;
+    border-radius: 4px;
+    background: #0069d9;
+    color: #fff;
+    cursor: pointer;
+  }
+
+  .btn-sec {
+    background: #6c757d;
+  }
+</style>
+</head>
+
+<body>
+
+<header>
+  Inventario del Componente
+</header>
+
+<div class="container">
+
+  <!-- ===============================
+       RESUMEN
+  ================================ -->
+  <div class="card">
+    <h3>📊 Resumen actual</h3>
+
+    <label>Filtrar por almacén</label>
+    <select id="filtro_almacen">
+      <option value="">Todos</option>
+    </select>
+
+    <div class="tabla-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Insumo</th>
+            <th>Presentación</th>
+            <th>Lote</th>
+            <th>Empaques</th>
+            <th>Cantidad real</th>
+          </tr>
+        </thead>
+        <tbody id="tablaResumen"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===============================
+     FABs
+================================ -->
+<div class="fab-group">
+  <div class="fab insumo" onclick="openDrawer('drawerInsumo')">I</div>
+  <div class="fab pres" onclick="openDrawer('drawerPres')">P</div>
+  <div class="fab mov" onclick="openDrawer('drawerMov')">+</div>
+</div>
+
+<!-- ===============================
+     DRAWER INSUMO
+================================ -->
+<div class="drawer" id="drawerInsumo">
+  <h3>Registrar Insumo</h3>
+  <form id="formInsumo">
+    <label>Nombre</label>
+    <input id="nombre_insumo" required>
+
+    <label>Categoría</label>
+    <select id="categoria" required>
+      <option value="">Seleccione</option>
+      <option value="INSECTICIDA">Insecticida</option>
+      <option value="MEDICAMENTO">Medicamento</option>
+      <option value="VACUNA">Vacuna</option>
+      <option value="CONSUMIBLE">Consumible</option>
+      <option value="OTRO">Otro</option>
+    </select>
+
+    <label>
+  ¿Permitir gasto parcial?
+  <input type="checkbox" id="tipo_gasto" >
+</label>
+    <button>Guardar</button>
+    <button type="button" class="btn-sec" onclick="closeDrawer()">Cerrar</button>
+  </form>
+</div>
+
+<!-- ===============================
+     DRAWER PRESENTACIÓN
+================================ -->
+<div class="drawer" id="drawerPres">
+  <h3>Registrar Presentación</h3>
+  <form id="formPresentacion">
+    <label>Insumo</label>
+    <select id="id_insumo_pres" required></select>
+
+    <label>Descripción</label>
+    <input id="descripcion" required>
+
+    <label>Unidad</label>
+    <input id="unidad_medida" required>
+
+    <label>Factor conversión</label>
+    <input type="number" id="factor_conversion" step="0.01" required>
+
+    <button>Guardar</button>
+    <button type="button" class="btn-sec" onclick="closeDrawer()">Cerrar</button>
+  </form>
+</div>
+
+<!-- ===============================
+     DRAWER MOVIMIENTOS
+================================ -->
+<div class="drawer" id="drawerMov">
+  <div class="drawer-header">
+    <h3>Registro de movimiento</h3>
+
+    <label class="label">Tipo de movimiento</label>
+    <select id="tipo_movimiento" required>
+      <option value="">Seleccione…</option>
+      <option value="INVENTARIO_INICIAL">Inventario inicial</option>
+      <option value="ENTRADA">Entrada</option>
+      <option value="SALIDA">Salida</option>
+      <option value="DONACION_SALIDA">Transferencia</option>
+      <option value="AJUSTE_POSITIVO">Ajuste positivo</option>
+      <option value="AJUSTE_NEGATIVO">Ajuste negativo</option>
+    </select>
+  </div>
+
+  <div class="drawer-body">
+    <form id="formLote">
+
+      <label class="label">Insumo</label>
+      <select id="id_insumo_lote" required></select>
+
+      <label class="label">Presentación</label>
+      <select id="id_presentacion" required></select>
+
+      <label class="label">Lote</label>
+      <input id="lote" required>
+
+      <label class="label">Fecha de caducidad</label>
+      <input type="date" id="fecha_caducidad">
+
+      <label class="label">Fecha de llegada</label>
+      <input type="date" id="fecha_llegada">
+
+      <!-- SOLO PARA DONACIONES -->
+      <div id="grupo_origen">
+        <label class="label">Almacén origen</label>
+        <select id="id_almacen_origen"></select>
+      </div>
+
+      <label class="label">Almacén destino</label>
+      <select id="id_almacen" required></select>
+
+      <label class="label">Proveedor</label>
+      <input id="proveedor">
+
+      <label class="label">Cantidad</label>
+      <input type="number" id="cantidad" min="1" required>
+
+    </form>
+  </div>
+
+  <div class="drawer-footer">
+    
+    <button type="submit" form="formLote">
+      Guardar movimiento
+    </button>
+    <button type="button" class="btn-sec" onclick="closeDrawer()">Cerrar</button>
+  </div>
+</div>
+
+
+<script>
+  function openDrawer(id) {
+    closeDrawer();
+    document.getElementById(id).classList.add("open");
+  }
+  function closeDrawer() {
+    document.querySelectorAll(".drawer").forEach(d => d.classList.remove("open"));
+  }
+</script>
+
+<script type="module" src="js/componente.js"></script>
+</body>
+</html>
+
+
+
+
+

@@ -1,0 +1,12 @@
+{
+  "name": "inventario-estatal",
+  "version": "1.0.0",
+  "description": "Sistema de inventarios estatal con vistas por Estado, Componente y Jurisdicción usando JavaScript y Supabase.",
+  "main": "index.js",
+  "scripts": {
+    "start": "echo 'Este proyecto no tiene servidor local, abre index.html en tu navegador.'"
+  },
+  "author": "Arath Flores",
+  "license": "MIT",
+  "dependencies": {}
+}

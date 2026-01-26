@@ -12,10 +12,6 @@ if (!idJurisdiccion) {
   location.href = "index.html";
 }
 
-/* ===============================
-   0. OBTENER ALMACÉN JURISDICCIÓN
-================================ */
-
 let idAlmacen = null;
 
 async function obtenerAlmacenUsuario() {
@@ -35,9 +31,8 @@ async function obtenerAlmacenUsuario() {
 }
 
 /* ===============================
-   1. CARGAR INVENTARIO
-================================ */
-
+   CARGAR INVENTARIO
+   ============================== */
 async function cargarInventario() {
   const { data, error } = await supa
     .from("v_movimientos_jurisdiccion")
@@ -63,42 +58,30 @@ async function cargarInventario() {
         presentacion: m.presentacion,
         caducidad: m.fecha_caducidad,
         unidad_completa: m.unidad_completa,
-        factor: Number(m.factor_conversion), // 🔥 CLAVE
-        stock_empaques: 0,
+        factor: Number(m.factor_conversion),
         stock_real: 0
       };
     }
 
-    const cantidad = Number(m.cantidad);
+    // Usamos movimiento_real de la vista para sumar/restar
+    const cantidadReal = Number(m.movimiento_real || 0);
 
-    if (
-      ["ENTRADA", "INVENTARIO_INICIAL", "DONACION_ENTRADA", "AJUSTE_POSITIVO"]
-        .includes(m.tipo)
-    ) {
-      resumen[key].stock_real += cantidad * resumen[key].factor;
-    }
+    resumen[key].stock_real += cantidadReal;
+  });
 
-    if (
-      ["SALIDA", "DONACION_SALIDA", "AJUSTE_NEGATIVO"]
-        .includes(m.tipo)
-    ) {
-      resumen[key].stock_real -= cantidad * resumen[key].factor;
-    }
-
-    // recalcular empaques SIEMPRE desde stock_real
-    resumen[key].stock_empaques = resumen[key].unidad_completa
-      ? Math.floor(resumen[key].stock_real / resumen[key].factor)
-      : Math.ceil(resumen[key].stock_real / resumen[key].factor);
+  // Recalcular empaques desde stock_real
+  Object.values(resumen).forEach(r => {
+    r.stock_empaques = r.unidad_completa
+      ? Math.floor(r.stock_real / r.factor)
+      : Math.ceil(r.stock_real / r.factor);
   });
 
   renderInventario(resumen);
 }
 
-
 /* ===============================
-   2. RENDER INVENTARIO
-================================ */
-
+   RENDER INVENTARIO
+   ============================== */
 function renderInventario(resumen) {
   const tbody = document.querySelector("#tablaInventario tbody");
   tbody.innerHTML = "";
@@ -127,17 +110,15 @@ function renderInventario(resumen) {
       <td><button>Registrar salida</button></td>
     `;
 
-    tr.querySelector("button").onclick = () =>
-      seleccionarLote(r);
+    tr.querySelector("button").onclick = () => seleccionarLote(r);
 
     tbody.appendChild(tr);
   });
 }
 
 /* ===============================
-   3. SELECCIONAR LOTE
-================================ */
-
+   SELECCIONAR LOTE
+   ============================== */
 let loteActual = null;
 
 function seleccionarLote(r) {
@@ -147,15 +128,11 @@ function seleccionarLote(r) {
   document.getElementById("id_almacen").value = r.id_almacen;
   document.getElementById("loteSeleccionado").innerText =
     `${r.lote} (Cad: ${r.caducidad ? new Date(r.caducidad).toLocaleDateString() : "—"})`;
-
- 
-
 }
 
 /* ===============================
-   4. REGISTRAR SALIDA
-================================ */
-
+   REGISTRAR SALIDA
+   ============================== */
 document.getElementById("formSalida").addEventListener("submit", async e => {
   e.preventDefault();
 
@@ -193,21 +170,18 @@ document.getElementById("formSalida").addEventListener("submit", async e => {
     .insert([payload]);
 
   if (error) {
-    // 👇 aquí caen los errores de triggers
     alert(error.message);
     return;
   }
 
   alert("Salida registrada correctamente");
-
   e.target.reset();
   loteActual = null;
   cargarInventario();
-}); 
+});
 
 /* ===============================
    INIT
-================================ */
-
+   ============================== */
 obtenerAlmacenUsuario();
 

@@ -1,0 +1,12 @@
+# Claves y configuraciones locales
+.env
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Node modules (en caso de usar npm en el futuro)
+node_modules/
+
+# Logs
+*.log

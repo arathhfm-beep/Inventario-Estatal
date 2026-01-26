@@ -233,5 +233,3 @@ El stock se obtiene mediante funciones SQL que:
 Sistema de Inventarios Estatal
 
 ---
-
-Si necesitas agregar diagramas, ejemplos SQL, capturas de pantalla o manual de usuario, este README está preparado para crecer sin perder claridad.

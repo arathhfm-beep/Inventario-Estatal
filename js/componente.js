@@ -261,7 +261,6 @@ console.log(movimientos);
   await cargarResumen();
 });
 
-
 /* ===============================
    RESUMEN
 ================================ */
@@ -291,7 +290,15 @@ async function cargarResumen() {
 
   const tbody = document.getElementById("tablaResumen");
   tbody.innerHTML = "";
-
+  data.sort((a, b) => {
+  if (a.insumo !== b.insumo) {
+    return a.insumo.localeCompare(b.insumo, 'es', { sensitivity: 'base' });
+  }
+  if (a.presentacion !== b.presentacion) {
+    return a.presentacion.localeCompare(b.presentacion, 'es', { sensitivity: 'base' });
+  }
+  return a.lote.localeCompare(b.lote, 'es', { sensitivity: 'base' });
+});
  data.forEach(r => {
 
   let clase = "";

@@ -292,17 +292,41 @@ async function cargarResumen() {
   const tbody = document.getElementById("tablaResumen");
   tbody.innerHTML = "";
 
-  data.forEach(r => {
-    tbody.insertAdjacentHTML("beforeend", `
-      <tr>
-        <td>${r.insumo}</td>
-        <td>${r.presentacion}</td>
-        <td>${r.lotes}</td>
-        <td>${r.cantidad_empaques}</td>
-        <td>${r.cantidad_real}</td>
-      </tr>
-    `);
-  });
+ data.forEach(r => {
+
+  let clase = "";
+  let textoFecha = "SIN CAD";
+
+  if (r.fecha_caducidad) {
+    const hoy = new Date();
+    const fechaCad = new Date(r.fecha_caducidad);
+
+    const diffMeses =
+      (fechaCad.getFullYear() - hoy.getFullYear()) * 12 +
+      (fechaCad.getMonth() - hoy.getMonth());
+
+    textoFecha = r.fecha_caducidad;
+
+    if (diffMeses <= 1) {
+      clase = "cad-rojo";
+    } else if (diffMeses <= 6) {
+      clase = "cad-amarillo";
+    }
+  } else {
+    clase = "cad-gris";
+  }
+
+  tbody.insertAdjacentHTML("beforeend", `
+    <tr class="${clase}">
+      <td>${r.insumo}</td>
+      <td>${r.presentacion}</td>
+      <td>${r.lote} (${textoFecha})</td>
+      <td>${r.cantidad_empaques}</td>
+      <td>${r.cantidad_real}</td>
+    </tr>
+  `);
+});
+
 }
 
 /* ===============================

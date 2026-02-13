@@ -274,7 +274,10 @@ async function cargarResumen() {
     query = supa
       .from("v_resumen_componente_global")
       .select("*")
-      .eq("id_componente", idComponente);
+      .eq("id_componente", idComponente)
+      .order("insumo", { ascending: true })
+    .order("presentacion", { ascending: true })
+    .order("lote", { ascending: true });
   } 
   // 👉 CON filtro = detalle por almacén
   else {
@@ -282,7 +285,10 @@ async function cargarResumen() {
       .from("v_resumen_componente")
       .select("*")
       .eq("id_componente", idComponente)
-      .eq("id_almacen", filtroAlmacen);
+      .eq("id_almacen", filtroAlmacen)
+      .order("insumo", { ascending: true })
+    .order("presentacion", { ascending: true })
+    .order("lote", { ascending: true });
   }
 
   const { data, error } = await query;
@@ -290,15 +296,7 @@ async function cargarResumen() {
 
   const tbody = document.getElementById("tablaResumen");
   tbody.innerHTML = "";
-  data.sort((a, b) => {
-  if (a.insumo !== b.insumo) {
-    return a.insumo.localeCompare(b.insumo, 'es', { sensitivity: 'base' });
-  }
-  if (a.presentacion !== b.presentacion) {
-    return a.presentacion.localeCompare(b.presentacion, 'es', { sensitivity: 'base' });
-  }
-  return a.lote.localeCompare(b.lote, 'es', { sensitivity: 'base' });
-});
+  
  data.forEach(r => {
 
   let clase = "";

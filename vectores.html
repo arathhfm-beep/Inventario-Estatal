@@ -1,200 +1,241 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <title>Inventario Vectores</title>
 
 <style>
+
 body{
-font-family:Arial;
-margin:40px;
+margin:0;
+font-family:"Segoe UI",Arial;
+background:#f4f6f9;
+color:#333;
 }
 
-section{
-margin-bottom:40px;
+header{
+background:#1f3a5f;
+color:#fff;
+padding:14px 20px;
+font-size:18px;
+font-weight:600;
+}
+
+.container{
 padding:20px;
-border:1px solid #ddd;
-border-radius:8px;
 }
 
-input,select,button{
-padding:6px;
-margin:4px;
+.card{
+background:#fff;
+border-radius:6px;
+box-shadow:0 2px 8px rgba(0,0,0,.08);
+padding:15px;
 }
 
-table{
-border-collapse:collapse;
+select,input{
 width:100%;
+padding:8px;
+border:1px solid #ccc;
+border-radius:4px;
 }
 
-th,td{
-border:1px solid #ccc;
-padding:6px;
-text-align:center;
+.fab-group{
+position:fixed;
+right:25px;
+bottom:25px;
+display:flex;
+flex-direction:column;
+gap:12px;
+}
+
+.fab{
+width:56px;
+height:56px;
+border-radius:50%;
+color:#fff;
+font-size:22px;
+display:flex;
+align-items:center;
+justify-content:center;
+cursor:pointer;
+box-shadow:0 4px 12px rgba(0,0,0,.25);
+}
+
+.fab.insumo{background:#17a2b8;}
+.fab.pres{background:#6f42c1;}
+.fab.mov{background:#28a745;}
+
+.drawer{
+position:fixed;
+top:0;
+right:-480px;
+width:420px;
+height:100%;
+background:#fff;
+box-shadow:-4px 0 12px rgba(0,0,0,.2);
+padding:20px;
+transition:right .3s ease;
+z-index:100;
+overflow-y:auto;
+}
+
+.drawer.open{
+right:0;
+}
+
+.drawer button{
+margin-top:15px;
+padding:8px;
+border:none;
+border-radius:4px;
+background:#0069d9;
+color:#fff;
+cursor:pointer;
+}
+
+.btn-sec{
+background:#6c757d;
 }
 
 </style>
-
 </head>
 
 <body>
 
-<h1>Inventario de Vectores</h1>
+<header>
+Inventario Vectores
+</header>
 
-<!-- ========================= -->
-<!-- INSUMOS -->
-<!-- ========================= -->
+<div class="container">
 
-<section>
+<div class="card">
+<h3>Carga de folios</h3>
+<p>Los folios representan empaques físicos entregados a las jurisdicciones.</p>
+</div>
 
-<h2>Registrar Insumo</h2>
+</div>
+
+<div class="fab-group">
+<div class="fab insumo" onclick="openDrawer('drawerInsumo')">I</div>
+<div class="fab pres" onclick="openDrawer('drawerPres')">P</div>
+<div class="fab mov" onclick="openDrawer('drawerFolios')">F</div>
+</div>
+
+<!-- INSUMO -->
+
+<div class="drawer" id="drawerInsumo">
+
+<h3>Registrar insumo</h3>
 
 <form id="formInsumo">
 
-<input id="nombre_insumo" placeholder="Nombre">
+<label>Nombre</label>
+<input id="nombre_insumo" required>
 
-<select id="categoria">
-<option value="adulticida">Adulticida</option>
-<option value="larvicida">Larvicida</option>
-<option value="larvicida">Otro</option>
+<label>Categoría</label>
+<select id="categoria" required>
+<option value="">Seleccione</option>
+<option value="Adulticida">Adulticida</option>
+<option value="Larvicida">Larvicida</option>
+<option value="Otro">Otro</option>
 </select>
 
 <label>
+Permitir gasto parcial
 <input type="checkbox" id="tipo_gasto">
-Permite decimales
 </label>
 
 <button>Guardar</button>
+<button type="button" class="btn-sec" onclick="closeDrawer()">Cerrar</button>
 
 </form>
 
-</section>
+</div>
 
-<!-- ========================= -->
-<!-- PRESENTACIONES -->
-<!-- ========================= -->
+<!-- PRESENTACION -->
 
-<section>
+<div class="drawer" id="drawerPres">
 
-<h2>Registrar Presentación</h2>
+<h3>Registrar presentación</h3>
 
 <form id="formPresentacion">
 
-<select id="id_insumo_pres"></select>
+<label>Insumo</label>
+<select id="id_insumo_pres" required></select>
 
-<input id="descripcion" placeholder="Descripción">
+<label>Descripción</label>
+<input id="descripcion" required>
 
-<input id="unidad_medida" placeholder="Unidad">
+<label>Unidad</label>
+<input id="unidad_medida" required>
 
-<input id="factor_conversion" type="number" placeholder="Factor">
+<label>Factor conversión</label>
+<input type="number" id="factor_conversion" step="0.01" required>
 
 <button>Guardar</button>
+<button type="button" class="btn-sec" onclick="closeDrawer()">Cerrar</button>
 
 </form>
 
-</section>
+</div>
 
-<!-- ========================= -->
-<!-- LOTES -->
-<!-- ========================= -->
-
-<section>
-
-<h2>Registrar Lote</h2>
-
-<form id="formLote">
-
-<select id="id_insumo_lote"></select>
-
-<select id="id_presentacion"></select>
-
-<input id="lote" placeholder="Lote">
-
-<input type="date" id="fecha_caducidad">
-
-<input type="date" id="fecha_llegada">
-
-<input id="proveedor" placeholder="Proveedor">
-
-<select id="tipo_movimiento">
-
-<option value="INVENTARIO_INICIAL">Inventario inicial</option>
-<option value="ENTRADA">Entrada</option>
-<option value="SALIDA">Salida</option>
-<option value="DONACION_ENTRADA">Donación entrada</option>
-<option value="DONACION_SALIDA">Donación salida</option>
-<option value="AJUSTE_POSITIVO">Ajuste positivo</option>
-<option value="AJUSTE_NEGATIVO">Ajuste negativo</option>
-
-</select>
-
-<input id="cantidad" type="number" placeholder="Cantidad empaques">
-
-<select id="id_almacen"></select>
-
-<select id="id_almacen_origen"></select>
-
-<button>Registrar Movimiento</button>
-
-</form>
-
-</section>
-
-<!-- ========================= -->
 <!-- FOLIOS -->
-<!-- ========================= -->
 
-<section>
+<div class="drawer" id="drawerFolios">
 
-<h2>Registrar Folios (Botes)</h2>
+<h3>Cargar folios</h3>
 
 <form id="formFolios">
 
-<select id="folio_lote"></select>
+<label>Insumo</label>
+<select id="id_insumo_lote" required></select>
 
-<input id="folio_codigo" placeholder="Folio del bote">
+<label>Presentación</label>
+<select id="id_presentacion" required></select>
 
-<input id="capacidad" type="number" placeholder="Capacidad">
+<label>Lote</label>
+<input id="lote" required>
 
-<select id="folio_almacen"></select>
+<label>Fecha de caducidad</label>
+<input id="fecha_caducidad" type="date" required>
 
-<button>Registrar folio</button>
+<label>Fecha de llegada</label>
+<input id="fecha_llegada" type="date" required>
+
+<label>Proveedor</label>
+<input id="proveedor">
+
+
+<label>Jurisdicción</label>
+<select id="id_almacen" required></select>
+
+<label>Folio inicial</label>
+<input id="folio_inicio" type="number" required>
+
+<label>Folio final</label>
+<input id="folio_fin" type="number" required>
+
+<button>Cargar folios</button>
+<button type="button" class="btn-sec" onclick="closeDrawer()">Cerrar</button>
 
 </form>
 
-</section>
+</div>
 
-<!-- ========================= -->
-<!-- RESUMEN -->
-<!-- ========================= -->
+<script>
 
-<section>
+function openDrawer(id){
+closeDrawer();
+document.getElementById(id).classList.add("open");
+}
 
-<h2>Stock</h2>
+function closeDrawer(){
+document.querySelectorAll(".drawer").forEach(d=>d.classList.remove("open"));
+}
 
-<select id="filtro_almacen"></select>
+</script>
 
-<table>
-
-<thead>
-
-<tr>
-<th>Insumo</th>
-<th>Presentación</th>
-<th>Lote</th>
-<th>Empaques</th>
-<th>Real</th>
-</tr>
-
-</thead>
-
-<tbody id="tablaResumen"></tbody>
-
-</table>
-
-</section>
-
-<script type="module" src="./js/vectores.js"></script>
+<script type="module" src="js/vectores.js"></script>
 
 </body>
 </html>

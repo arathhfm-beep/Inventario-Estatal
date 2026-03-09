@@ -261,7 +261,6 @@ console.log(movimientos);
   await cargarResumen();
 });
 
-
 /* ===============================
    RESUMEN
 ================================ */
@@ -275,7 +274,10 @@ async function cargarResumen() {
     query = supa
       .from("v_resumen_componente_global")
       .select("*")
-      .eq("id_componente", idComponente);
+      .eq("id_componente", idComponente)
+      .order("insumo", { ascending: true })
+    .order("presentacion", { ascending: true })
+    .order("lote", { ascending: true });
   } 
   // 👉 CON filtro = detalle por almacén
   else {
@@ -283,7 +285,10 @@ async function cargarResumen() {
       .from("v_resumen_componente")
       .select("*")
       .eq("id_componente", idComponente)
-      .eq("id_almacen", filtroAlmacen);
+      .eq("id_almacen", filtroAlmacen)
+      .order("insumo", { ascending: true })
+    .order("presentacion", { ascending: true })
+    .order("lote", { ascending: true });
   }
 
   const { data, error } = await query;
@@ -291,18 +296,42 @@ async function cargarResumen() {
 
   const tbody = document.getElementById("tablaResumen");
   tbody.innerHTML = "";
+  
+ data.forEach(r => {
 
-  data.forEach(r => {
-    tbody.insertAdjacentHTML("beforeend", `
-      <tr>
-        <td>${r.insumo}</td>
-        <td>${r.presentacion}</td>
-        <td>${r.lotes}</td>
-        <td>${r.cantidad_empaques}</td>
-        <td>${r.cantidad_real}</td>
-      </tr>
-    `);
-  });
+  let clase = "";
+  let textoFecha = "SIN CAD";
+
+  if (r.fecha_caducidad) {
+    const hoy = new Date();
+    const fechaCad = new Date(r.fecha_caducidad);
+
+    const diffMeses =
+      (fechaCad.getFullYear() - hoy.getFullYear()) * 12 +
+      (fechaCad.getMonth() - hoy.getMonth());
+
+    textoFecha = r.fecha_caducidad;
+
+    if (diffMeses <= 1) {
+      clase = "cad-rojo";
+    } else if (diffMeses <= 6) {
+      clase = "cad-amarillo";
+    }
+  } else {
+    clase = "cad-gris";
+  }
+
+  tbody.insertAdjacentHTML("beforeend", `
+    <tr class="${clase}">
+      <td>${r.insumo}</td>
+      <td>${r.presentacion}</td>
+      <td>${r.lote} (${textoFecha})</td>
+      <td>${r.cantidad_empaques}</td>
+      <td>${r.cantidad_real}</td>
+    </tr>
+  `);
+});
+
 }
 
 /* ===============================

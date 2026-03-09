@@ -180,6 +180,73 @@ document.getElementById("formSalida").addEventListener("submit", async e => {
   cargarInventario();
 });
 
+document
+  .getElementById("btnBuscarMov")
+  .addEventListener("click", buscarMovimientos);
+
+document
+  .getElementById("busquedaMov")
+  .addEventListener("keypress", e => {
+    if (e.key === "Enter") buscarMovimientos();
+  });
+
+async function buscarMovimientos() {
+  const texto = document.getElementById("busquedaMov").value.trim();
+  const contenedor = document.getElementById("resultadosMovimientos");
+
+  if (!texto) {
+    contenedor.innerHTML = "<p>Escriba algo para buscar.</p>";
+    return;
+  }
+
+  contenedor.innerHTML = "Buscando...";
+
+  const { data, error } = await supa
+    .from("vista_movimientos_jurisdiccion")
+    .select("*")
+    .eq("id_jurisdiccion", idJurisdiccion)
+    .or(`lote.ilike.%${texto}%,nombre_insumo.ilike.%${texto}%`)
+    .order("fecha_movimiento", { ascending: false });
+
+  if (error) {
+    console.error(error);
+    contenedor.innerHTML = "Error al buscar.";
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    contenedor.innerHTML = "<p>No se encontraron movimientos.</p>";
+    return;
+  }
+
+  contenedor.innerHTML = "";
+
+  data.forEach(mov => {
+    const card = document.createElement("div");
+    card.className = "card-mov";
+
+    card.innerHTML = `
+      <div class="card-header">
+        <div>
+          <div class="card-insumo">${mov.nombre_insumo}</div>
+          <div class="card-lote">Lote: ${mov.lote}</div>
+        </div>
+        <div class="card-cantidad"> ${mov.cantidad}</div>
+      </div>
+
+      <div class="card-body">
+        <div><strong>Folio:</strong> ${mov.folio}</div>
+        <div><strong>Fecha:</strong> ${new Date(mov.fecha_movimiento).toLocaleDateString()}</div>
+        ${mov.observaciones ? `<div><strong>Obs:</strong> ${mov.observaciones}</div>` : ""}
+      </div>
+    `;
+
+    contenedor.appendChild(card);
+  });
+}
+
+
+
 /* ===============================
    INIT
    ============================== */

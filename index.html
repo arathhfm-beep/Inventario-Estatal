@@ -134,29 +134,33 @@
       "sb_publishable_g6n-He351w0iWQfAtmHGkQ_pQm_wHO9"
     );
 
-    async function entrar() {
-      const clave = document.getElementById("clave").value;
+   async function entrar() {
+  const clave = document.getElementById("clave").value;
 
-      const { data, error } = await supa
-        .from("claves_acceso")
-        .select("*")
-        .eq("clave", clave)
-        .eq("activo", true)
-        .single();
+  const { data, error } = await supa
+    .from("claves_acceso")
+    .select("*")
+    .eq("clave", clave)
+    .eq("activo", true)
+    .single();
 
-      if (error) {
-        alert("Clave inválida");
-        return;
-      }
+  if (error || !data) {
+    alert("Clave inválida");
+    return;
+  }
 
-      sessionStorage.setItem("rol", data.rol);
-      sessionStorage.setItem("id_jurisdiccion", data.id_jurisdiccion);
-      sessionStorage.setItem("id_componente", data.id_componente);
+  sessionStorage.setItem("rol", data.rol);
+  sessionStorage.setItem("id_jurisdiccion", data.id_jurisdiccion);
+  sessionStorage.setItem("id_componente", data.id_componente);
 
-      if (data.rol === "JURISDICCION") location.href = "jurisdiccion.html";
-      if (data.rol === "COMPONENTE") location.href = "componente.html";
-      if (data.rol === "ESTATAL") location.href = "estatal.html";
-    }
+  if (data.rol === "JURISDICCION") location.href = "jurisdiccion.html";
+
+  if (data.rol === "COMPONENTE") location.href = "componente.html";
+
+  if (data.rol === "VECTORES") location.href = "vectores.html";
+
+  if (data.rol === "ESTATAL") location.href = "estatal.html";
+}
   </script>
 
 </body>

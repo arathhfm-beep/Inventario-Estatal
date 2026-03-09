@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Inventario Vectores</title>
+
+<style>
+body{
+font-family:Arial;
+margin:40px;
+}
+
+section{
+margin-bottom:40px;
+padding:20px;
+border:1px solid #ddd;
+border-radius:8px;
+}
+
+input,select,button{
+padding:6px;
+margin:4px;
+}
+
+table{
+border-collapse:collapse;
+width:100%;
+}
+
+th,td{
+border:1px solid #ccc;
+padding:6px;
+text-align:center;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>Inventario de Vectores</h1>
+
+<!-- ========================= -->
+<!-- INSUMOS -->
+<!-- ========================= -->
+
+<section>
+
+<h2>Registrar Insumo</h2>
+
+<form id="formInsumo">
+
+<input id="nombre_insumo" placeholder="Nombre">
+
+<select id="categoria">
+<option value="adulticida">Adulticida</option>
+<option value="larvicida">Larvicida</option>
+<option value="larvicida">Otro</option>
+</select>
+
+<label>
+<input type="checkbox" id="tipo_gasto">
+Permite decimales
+</label>
+
+<button>Guardar</button>
+
+</form>
+
+</section>
+
+<!-- ========================= -->
+<!-- PRESENTACIONES -->
+<!-- ========================= -->
+
+<section>
+
+<h2>Registrar Presentación</h2>
+
+<form id="formPresentacion">
+
+<select id="id_insumo_pres"></select>
+
+<input id="descripcion" placeholder="Descripción">
+
+<input id="unidad_medida" placeholder="Unidad">
+
+<input id="factor_conversion" type="number" placeholder="Factor">
+
+<button>Guardar</button>
+
+</form>
+
+</section>
+
+<!-- ========================= -->
+<!-- LOTES -->
+<!-- ========================= -->
+
+<section>
+
+<h2>Registrar Lote</h2>
+
+<form id="formLote">
+
+<select id="id_insumo_lote"></select>
+
+<select id="id_presentacion"></select>
+
+<input id="lote" placeholder="Lote">
+
+<input type="date" id="fecha_caducidad">
+
+<input type="date" id="fecha_llegada">
+
+<input id="proveedor" placeholder="Proveedor">
+
+<select id="tipo_movimiento">
+
+<option value="INVENTARIO_INICIAL">Inventario inicial</option>
+<option value="ENTRADA">Entrada</option>
+<option value="SALIDA">Salida</option>
+<option value="DONACION_ENTRADA">Donación entrada</option>
+<option value="DONACION_SALIDA">Donación salida</option>
+<option value="AJUSTE_POSITIVO">Ajuste positivo</option>
+<option value="AJUSTE_NEGATIVO">Ajuste negativo</option>
+
+</select>
+
+<input id="cantidad" type="number" placeholder="Cantidad empaques">
+
+<select id="id_almacen"></select>
+
+<select id="id_almacen_origen"></select>
+
+<button>Registrar Movimiento</button>
+
+</form>
+
+</section>
+
+<!-- ========================= -->
+<!-- FOLIOS -->
+<!-- ========================= -->
+
+<section>
+
+<h2>Registrar Folios (Botes)</h2>
+
+<form id="formFolios">
+
+<select id="folio_lote"></select>
+
+<input id="folio_codigo" placeholder="Folio del bote">
+
+<input id="capacidad" type="number" placeholder="Capacidad">
+
+<select id="folio_almacen"></select>
+
+<button>Registrar folio</button>
+
+</form>
+
+</section>
+
+<!-- ========================= -->
+<!-- RESUMEN -->
+<!-- ========================= -->
+
+<section>
+
+<h2>Stock</h2>
+
+<select id="filtro_almacen"></select>
+
+<table>
+
+<thead>
+
+<tr>
+<th>Insumo</th>
+<th>Presentación</th>
+<th>Lote</th>
+<th>Empaques</th>
+<th>Real</th>
+</tr>
+
+</thead>
+
+<tbody id="tablaResumen"></tbody>
+
+</table>
+
+</section>
+
+<script type="module" src="./js/vectores.js"></script>
+
+</body>
+</html>

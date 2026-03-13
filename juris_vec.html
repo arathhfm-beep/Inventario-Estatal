@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8">
+<title>Inventario Vectores</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#f3f6fa;
+padding:20px;
+box-sizing: border-box;
+}
+
+.card{
+background:white;
+padding:20px;
+margin-bottom:20px;
+border-radius:8px;
+box-shadow:0 2px 6px rgba(0,0,0,.1);
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+}
+
+th,td{
+padding:10px;
+border-bottom:1px solid #ddd;
+}
+
+th{
+background:#f0f3f7;
+text-align:left;
+}
+
+button{
+background:#2b6cb0;
+color:white;
+border:none;
+padding:6px 10px;
+border-radius:4px;
+cursor:pointer;
+}
+
+button:hover{
+background:#1f4e85;
+}
+
+input,textarea,select{
+width:100%;
+padding:6px;
+margin-bottom:10px;
+}
+
+.card-mov{
+border:1px solid #ddd;
+padding:10px;
+margin-bottom:10px;
+border-radius:6px;
+}
+
+.card-header{
+display:flex;
+justify-content:space-between;
+}
+
+.card-insumo{
+font-weight:bold;
+}
+
+.card-lote{
+font-size:12px;
+color:#666;
+}
+
+#panelForm{
+
+position:fixed;
+
+top:0;
+right:-420px;
+
+width:380px;
+height:100%;
+
+background:white;
+
+box-shadow:-4px 0 10px rgba(0,0,0,.15);
+
+padding:20px;
+
+transition:right .3s;
+
+overflow:auto;
+
+z-index:1000;
+
+}
+
+#panelForm.abierto{
+right:0;
+}
+
+#cerrarPanel{
+
+background:#999;
+margin-bottom:10px;
+
+}
+#movGeosis{
+
+display:grid;
+
+grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+
+gap:14px;
+
+}
+
+.card-mov{
+    
+
+border:1px solid #ddd;
+padding:14px;
+border-radius:10px;
+
+background:white;
+
+box-shadow:0 2px 6px rgba(0,0,0,.08);
+
+display:flex;
+flex-direction:column;
+
+}
+
+
+.card-header{
+
+display:flex;
+justify-content:space-between;
+align-items:center;
+
+font-weight:bold;
+
+border-bottom:1px solid #eee;
+padding-bottom:6px;
+
+}
+.card-body{
+
+font-size:14px;
+color:#444;
+
+display:flex;
+flex-direction:column;
+
+gap:4px;
+
+}
+#panelForm{
+
+position:fixed;
+
+top:0;
+right:-400px;
+
+width:360px;
+height:100%;
+
+background:white;
+
+box-shadow:-4px 0 12px rgba(0,0,0,.2);
+
+padding:20px;
+
+transition:right .3s;
+
+overflow:auto;
+
+z-index:1000;
+
+}
+
+#panelForm.abierto{
+right:0;
+}
+#btnAbrirForm{
+
+position:fixed;
+
+bottom:25px;
+right:25px;
+
+width:60px;
+height:60px;
+
+border-radius:50%;
+
+font-size:28px;
+
+background:#2b6cb0;
+color:white;
+
+display:flex;
+align-items:center;
+justify-content:center;
+
+box-shadow:0 4px 10px rgba(0,0,0,.25);
+
+z-index:1000;
+
+}
+
+#btnAbrirForm:hover{
+background:#1f4e85;
+transform:scale(1.05);
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h2>Inventario Jurisdicción</h2>
+
+<div class="card">
+
+<h3>Stock disponible</h3>
+
+<table id="tablaInventario">
+
+<thead>
+<tr>
+<th>Lote</th>
+<th>Insumo</th>
+<th>Stock</th>
+<th>Acción</th>
+</tr>
+</thead>
+
+<tbody></tbody>
+
+</table>
+
+</div>
+
+
+<div class="card">
+
+<h3>Folios disponibles</h3>
+
+<div id="panelFolios"></div>
+
+</div>
+
+
+<div class="card">
+
+<h3>
+<button id="btnAbrirForm">+</button>
+
+<div id="panelForm">
+
+<h3>Registrar gasto</h3>
+
+<form id="formGasto">
+
+<label>Folio</label>
+<select id="folioSelect"></select>
+
+<label>Cantidad</label>
+<input type="number" id="cantidadGasto">
+
+<label>Fecha</label>
+<input type="date" id="fechaGasto">
+
+<button type="submit">Guardar gasto</button>
+
+<button type="button" id="cerrarPanel">
+Cerrar
+</button>
+
+</form>
+
+</div>
+
+<div class="card">
+
+<h3>Movimientos</h3>
+
+<input id="buscarFolio" placeholder="Buscar folio">
+
+<div id="movGeosis"></div>
+
+</div>
+
+
+<script>
+
+const panel = document.getElementById("panelForm");
+
+document
+.getElementById("btnAbrirForm")
+.onclick = () => {
+
+panel.classList.add("abierto");
+
+};
+
+document
+.getElementById("cerrarPanel")
+.onclick = () => {
+
+panel.classList.remove("abierto");
+
+};
+
+</script>
+
+<script type="module" src="./js/juris_vec.js"></script>
+
+</body>
+</html>

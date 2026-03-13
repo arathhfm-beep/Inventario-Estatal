@@ -30,6 +30,7 @@ background:#fff;
 border-radius:6px;
 box-shadow:0 2px 8px rgba(0,0,0,.08);
 padding:15px;
+margin-bottom:20px;
 }
 
 select,input{
@@ -37,6 +38,32 @@ width:100%;
 padding:8px;
 border:1px solid #ccc;
 border-radius:4px;
+}
+
+h3{
+margin-top:0;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:10px;
+}
+
+th,td{
+padding:8px;
+border-bottom:1px solid #ddd;
+font-size:14px;
+}
+
+th{
+background:#f0f2f5;
+text-align:left;
+}
+
+.tabla-scroll{
+max-height:400px;
+overflow:auto;
 }
 
 .fab-group{
@@ -96,6 +123,23 @@ cursor:pointer;
 .btn-sec{
 background:#6c757d;
 }
+#panelFolios table{
+border-collapse:collapse;
+width:100%;
+}
+
+#panelFolios td{
+border:1px solid #ddd;
+padding:4px;
+text-align:center;
+font-size:12px;
+}
+
+#panelFolios th{
+background:#e9edf3;
+text-align:left;
+padding:6px;
+}
 
 </style>
 </head>
@@ -108,12 +152,59 @@ Inventario Vectores
 
 <div class="container">
 
+<!-- ===============================
+RESUMEN
+=============================== -->
+
 <div class="card">
-<h3>Carga de folios</h3>
-<p>Los folios representan empaques físicos entregados a las jurisdicciones.</p>
+
+<h3>📊 Resumen de stock</h3>
+
+<label>Filtrar por jurisdicción</label>
+<select id="filtro_almacen">
+<option value="">Estado completo</option>
+</select>
+
+<div class="tabla-scroll">
+
+<table>
+
+<thead>
+<tr>
+<th>Insumo</th>
+<th>Presentación</th>
+<th>Lote</th>
+<th>Folios</th>
+<th>Cantidad real</th>
+</tr>
+</thead>
+
+<tbody id="tablaResumen"></tbody>
+
+</table>
+
 </div>
 
 </div>
+
+
+<!-- ===============================
+INFO
+=============================== -->
+
+<div class="card">
+
+<h3>Folios disponibles</h3>
+
+<div id="panelFolios"></div>
+
+</div>
+</div>
+
+
+<!-- ===============================
+BOTONES
+=============================== -->
 
 <div class="fab-group">
 <div class="fab insumo" onclick="openDrawer('drawerInsumo')">I</div>
@@ -121,7 +212,10 @@ Inventario Vectores
 <div class="fab mov" onclick="openDrawer('drawerFolios')">F</div>
 </div>
 
-<!-- INSUMO -->
+
+<!-- ===============================
+INSUMO
+=============================== -->
 
 <div class="drawer" id="drawerInsumo">
 
@@ -152,7 +246,10 @@ Permitir gasto parcial
 
 </div>
 
-<!-- PRESENTACION -->
+
+<!-- ===============================
+PRESENTACION
+=============================== -->
 
 <div class="drawer" id="drawerPres">
 
@@ -179,7 +276,10 @@ Permitir gasto parcial
 
 </div>
 
-<!-- FOLIOS -->
+
+<!-- ===============================
+FOLIOS
+=============================== -->
 
 <div class="drawer" id="drawerFolios">
 
@@ -196,6 +296,12 @@ Permitir gasto parcial
 <label>Lote</label>
 <input id="lote" required>
 
+<label>Origen</label>
+<select id="origen">
+<option value="">Geosis</option>
+<option value="interno">Interno</option>
+</select>
+
 <label>Fecha de caducidad</label>
 <input id="fecha_caducidad" type="date" required>
 
@@ -204,7 +310,6 @@ Permitir gasto parcial
 
 <label>Proveedor</label>
 <input id="proveedor">
-
 
 <label>Jurisdicción</label>
 <select id="id_almacen" required></select>
@@ -221,6 +326,7 @@ Permitir gasto parcial
 </form>
 
 </div>
+
 
 <script>
 

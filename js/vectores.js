@@ -21,12 +21,29 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 await cargarInsumos();
 await cargarAlmacenes();
+await cargarResumen();
+await cargarPanelFolios();
 
 document
 .getElementById("id_insumo_lote")
 .addEventListener("change", cargarPresentacionesPorInsumo);
 
+document
+.getElementById("filtro_almacen")
+.addEventListener("change",cargarResumen);
+
+document
+.getElementById("filtro_almacen")
+.addEventListener("change", async ()=>{
+
+await cargarResumen();
+await cargarPanelFolios();
+
 });
+
+
+});
+
 
 /* ===============================
 INSUMOS
@@ -146,6 +163,7 @@ const {data,error}=await supa
 if(error) return alert(error.message);
 
 const sel=document.getElementById("id_almacen");
+const filtro=document.getElementById("filtro_almacen");
 
 sel.innerHTML=`<option value="">Seleccione jurisdicción</option>`;
 
@@ -157,9 +175,196 @@ opt.value=a.id;
 opt.textContent=a.nombre;
 
 sel.appendChild(opt);
+const opt2=document.createElement("option");
+
+opt2.value=a.id;
+opt2.textContent=a.nombre;
+
+filtro.appendChild(opt2);
 
 });
 
+}
+
+async function cargarResumen(){
+
+const idAlmacen = document.getElementById("filtro_almacen").value;
+
+let query = supa
+.from("vw_resumen_vectores")
+.select("*");
+
+if(idAlmacen){
+query = query.eq("id_almacen", idAlmacen);
+}
+
+const {data,error} = await query;
+
+if(error){
+alert(error.message);
+return;
+}
+
+/* ===============================
+AGRUPAR POR INSUMO + PRESENTACION + LOTE
+================================ */
+
+const resumen = {};
+
+data.forEach(r => {
+
+const key = r.insumo + "_" + r.presentacion + "_" + r.lote;
+
+if(!resumen[key]){
+
+resumen[key] = {
+insumo: r.insumo,
+presentacion: r.presentacion,
+unidad_medida: r.unidad_medida,
+lote: r.lote,
+fecha_caducidad: r.fecha_caducidad,
+empaques: 0,
+cantidad_real: 0
+};
+
+}
+
+resumen[key].empaques += Number(r.empaques || 0);
+resumen[key].cantidad_real += Number(r.cantidad_real || 0);
+
+});
+
+renderResumen(Object.values(resumen));
+
+}
+
+async function cargarPanelFolios(){
+
+const idAlmacen = document.getElementById("filtro_almacen").value;
+
+const panel = document.getElementById("panelFolios");
+
+panel.innerHTML="Cargando...";
+
+let data;
+
+/* ==========================
+SIN FILTRO → RESUMEN ESTATAL
+========================== */
+
+if(!idAlmacen){
+
+const {data:res,error} = await supa
+.from("vw_folios_disponibles")
+.select("jurisdiccion,insumo");
+
+if(error) return alert(error.message);
+
+const mapa={};
+
+res.forEach(r=>{
+
+const key = r.jurisdiccion+"-"+r.insumo;
+
+if(!mapa[key]){
+mapa[key]={
+jur:r.jurisdiccion,
+ins:r.insumo,
+total:0
+};
+}
+
+mapa[key].total++;
+
+});
+
+data = Object.values(mapa);
+
+panel.innerHTML="";
+
+data.forEach(r=>{
+
+panel.innerHTML += `
+<div>
+<b>${r.jur}</b> — ${r.ins}<br>
+Folios: ${r.total}
+</div>
+<hr>
+`;
+
+});
+
+}
+
+/* ==========================
+CON FILTRO → FOLIOS REALES
+========================== */
+
+else{
+
+const {data:res,error} = await supa
+.from("vw_folios_disponibles")
+.select("*")
+.eq("id_almacen",idAlmacen)
+.gt("disponible",0)
+.order("insumo");
+
+if(error) return alert(error.message);
+
+panel.innerHTML="";
+
+const maxCols = 10; // máximo folios por fila
+
+// agrupar por insumo
+const grupos = {};
+
+res.forEach(r=>{
+  if(!grupos[r.insumo]) grupos[r.insumo] = [];
+  grupos[r.insumo].push(r.folio);
+});
+
+// generar tabla por insumo
+Object.entries(grupos).forEach(([insumo,folios])=>{
+
+  const tabla = document.createElement("table");
+
+  tabla.style.marginBottom = "15px";
+
+  let html = `
+    <thead>
+      <tr>
+        <th colspan="${maxCols}">${insumo}</th>
+      </tr>
+    </thead>
+    <tbody>
+  `;
+
+  for(let i=0;i<folios.length;i++){
+
+    if(i % maxCols === 0){
+      html += "<tr>";
+    }
+
+    html += `<td>${folios[i]}</td>`;
+
+    if(i % maxCols === maxCols-1){
+      html += "</tr>";
+    }
+
+  }
+
+  if(folios.length % maxCols !== 0){
+    html += "</tr>";
+  }
+
+  html += "</tbody>";
+
+  tabla.innerHTML = html;
+
+  panel.appendChild(tabla);
+
+});
+}
 }
 
 /* ===============================
@@ -203,21 +408,18 @@ const capacidad = pres.factor_conversion;
 /* ===============================
 BUSCAR O CREAR LOTE
 ================================ */
-/* ===============================
-BUSCAR O CREAR LOTE
-================================ */
 
 const fechaCad = fecha_caducidad.value;
 const fechaLleg = fecha_llegada.value;
 const proveedorTxt = proveedor.value;
+const origenValue = document.getElementById("origen").value;
+const origen = origenValue === "" ? null : origenValue;
 
 const { data: loteExistente } = await supa
 .from("lotes")
 .select("id")
 .eq("id_presentacion", idPresentacion)
 .eq("lote", loteTxt)
-.eq("id_almacen", almacen)
-.eq("id_componente", idComponente)
 .maybeSingle();
 
 let idLote;
@@ -233,8 +435,8 @@ lote: loteTxt,
 fecha_caducidad: fechaCad,
 fecha_llegada: fechaLleg,
 proveedor: proveedorTxt || null,
-id_almacen: almacen,
-id_componente: idComponente
+id_componente: idComponente,
+origen: origen
 
 })
 .select("id")
@@ -305,6 +507,32 @@ opt.value=i.id;
 opt.textContent=i.nombre;
 
 select.appendChild(opt);
+
+});
+
+}
+
+function renderResumen(data){
+
+const tbody = document.getElementById("tablaResumen");
+
+tbody.innerHTML="";
+
+data.forEach(r=>{
+
+const rojo = r.cantidad_real < 0
+? "style='color:red;font-weight:bold'"
+: "";
+
+tbody.innerHTML += `
+<tr>
+<td>${r.insumo}</td>
+<td>${r.presentacion}</td>
+<td>${r.lote} (${r.fecha_caducidad ?? ""})</td>
+<td>${r.empaques}</td>
+<td ${rojo}>${r.cantidad_real} ${r.unidad_medida}</td>
+</tr>
+`;
 
 });
 

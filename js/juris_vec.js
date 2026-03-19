@@ -1,25 +1,73 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
+/* SUPABASE */
+
 const supa = createClient(
 "https://mktpkopqrzelxigcayqe.supabase.co",
 "sb_publishable_g6n-He351w0iWQfAtmHGkQ_pQm_wHO9"
 );
 
+/* VARIABLES */
+
 const idJurisdiccion = sessionStorage.getItem("id_jurisdiccion");
 
-if (!idJurisdiccion) {
-alert("Acceso no válido");
-location.href = "index.html";
+let idAlmacen = null;
+let loteSeleccionado = null;
+
+
+/* ===============================
+INIT
+=============================== */
+
+document.addEventListener("DOMContentLoaded", async () => {
+
+if(!idJurisdiccion){
+alert("Acceso inválido");
+location.href="index.html";
+return;
 }
 
-let idAlmacen=null;
-let loteSeleccionado=null;
+activarTabs();
+
+await obtenerAlmacen();
+
+});
+
+
+/* ===============================
+TABS
+=============================== */
+
+function activarTabs(){
+
+document.querySelectorAll(".tab").forEach(btn=>{
+
+btn.addEventListener("click",()=>{
+
+document.querySelectorAll(".tab")
+.forEach(t=>t.classList.remove("activo"));
+
+document.querySelectorAll(".panelTab")
+.forEach(p=>p.classList.remove("activo"));
+
+btn.classList.add("activo");
+
+document
+.getElementById(btn.dataset.tab)
+.classList.add("activo");
+
+});
+
+});
+
+}
+
 
 /* ===============================
 OBTENER ALMACEN
-================================ */
+=============================== */
 
-async function obtenerAlmacenUsuario(){
+async function obtenerAlmacen(){
 
 const {data,error} = await supa
 .from("almacenes")
@@ -27,139 +75,108 @@ const {data,error} = await supa
 .eq("id_jurisdiccion",idJurisdiccion)
 .single();
 
-if(error || !data){
+if(error){
 alert("No se encontró almacén");
 return;
 }
 
-idAlmacen=data.id;
+idAlmacen = data.id;
 
 await cargarInventario();
 await cargarFolios();
-await cargarMovimientosGeosis();
+await cargarMovimientos();
 
 }
 
 
 /* ===============================
 INVENTARIO
-================================ */
+=============================== */
 
 async function cargarInventario(){
 
 const tbody = document.querySelector("#tablaInventario tbody");
 
-tbody.innerHTML = "Cargando...";
+tbody.innerHTML="Cargando...";
 
 const {data,error} = await supa
 .from("vw_folios_disponibles")
-.select(`
-id_almacen,
-insumo,
-lote,
-fecha_caducidad,
-disponible,
-unidad_medida,
-origen,
-description
-`)
-.eq("id_almacen", idAlmacen);
+.select("*")
+.eq("id_almacen",idAlmacen);
 
 if(error){
-alert(error.message);
+tbody.innerHTML="Error cargando inventario";
 return;
 }
 
-const resumen = {};
+/* agrupar por lote */
 
-/* agrupar por insumo + lote */
+const resumen={};
 
-data.forEach(f => {
+data.forEach(f=>{
 
-const key = f.insumo + "_" + f.lote;
+const key=f.lote+"_"+f.insumo;
 
 if(!resumen[key]){
 
-resumen[key] = {
-insumo: f.insumo,
-lote: f.lote,
-caducidad: f.fecha_caducidad,
-unidad: f.unidad_medida,
-stock: 0,
-botes: 0,
-descripcion: f.description,
-origen: f.origen || null
+resumen[key]={
+
+insumo:f.insumo,
+lote:f.lote,
+cantidad:0,
+stock:0,
+presentacion:f.description,
+origen:f.origen
+
 };
 
 }
 
-/* sumar stock */
+resumen[key].cantidad+=Number(f.disponible||0);
 
-resumen[key].stock += Number(f.disponible || 0);
-if(Number(f.disponible) > 0){
-resumen[key].botes++;
+if(Number(f.disponible)>0){
+resumen[key].stock++;
 }
+
 });
 
+tbody.innerHTML="";
 
+Object.values(resumen).forEach(r=>{
 
+let boton="";
 
+if(r.origen==="interno"){
 
-/* limpiar tabla */
-
-tbody.innerHTML = "";
-
-/* render filas */
-
-Object.values(resumen).forEach(r => {
-
-const cad = r.caducidad
-? new Date(r.caducidad).toLocaleDateString()
-: "—";
-
-/* determinar acción */
-
-let accion = "";
-
-if(r.origen === "interno"){
-
-accion = `
-<button onclick="abrirFormulario('${r.lote}','${r.insumo}')">
+boton=`
+<button
+class="btn btnMovimiento"
+onclick="abrirFormulario('${r.lote}','${r.insumo}')">
 Registrar movimiento
 </button>
 `;
 
 }else{
 
-accion = `<span style="color:#888">Controlado por GEOSIS</span>`;
+boton=`<span style="color:#888">GEOSIS</span>`;
 
 }
 
-/* render fila */
-
-tbody.innerHTML += `
+tbody.innerHTML+=`
 
 <tr>
 
-<td>
-${r.lote}
-<br>
-<small>Cad: ${cad}</small>
-</td>
+<td>${r.insumo}</td>
 
-<td>
-${r.insumo}
-</td>
+<td>${r.lote}</td>
 
-<td>
-${Math.round(r.stock)} ${r.unidad || ""}
-<br>
-<small>${r.botes} ${r.descripcion}</small>
-</td>
+<td>${r.cantidad}</td>
 
-<td>
-${accion}
-</td>
+<td>${r.stock}</td>
+
+<td>${r.presentacion||""}</td>
+
+<td>${boton}</td>
 
 </tr>
 
@@ -167,101 +184,80 @@ ${accion}
 
 });
 
-/* si no hay datos */
+/* KPI */
 
-if(Object.keys(resumen).length === 0){
-
-tbody.innerHTML = `
-<tr>
-<td colspan="4" style="text-align:center;color:#777">
-Sin inventario disponible
-</td>
-</tr>
-`;
+document.getElementById("totalInsumos")
+.innerText = Object.keys(resumen).length;
 
 }
-
-}
-
-
 
 
 /* ===============================
 FOLIOS DISPONIBLES
-================================ */
+=============================== */
 
 async function cargarFolios(){
 
-const panel = document.getElementById("panelFolios");
+const panel=document.getElementById("panelFolios");
 
-const {data,error} = await supa
+const {data,error}=await supa
 .from("vw_folios_disponibles")
 .select("*")
-.eq("id_almacen", idAlmacen)
-.is("origen",null)
-.gt("disponible", 0)
+.eq("id_almacen",idAlmacen)
+.gt("disponible",0)
 .order("insumo");
 
 if(error){
-panel.innerHTML = "Error";
+panel.innerHTML="Error cargando folios";
 return;
 }
 
-const grupos = {};
+/* KPI */
 
-/* agrupar por insumo */
+document.getElementById("totalFolios").innerText=data.length;
 
-data.forEach(f => {
+/* agrupar */
 
-if(!grupos[f.insumo]) grupos[f.insumo] = [];
+const grupos={};
 
-grupos[f.insumo].push({
-folio: f.folio,
-disponible: f.disponible,
-unidad: f.unidad_medida
+data.forEach(f=>{
+
+if(!grupos[f.insumo]) grupos[f.insumo]=[];
+
+grupos[f.insumo].push(f);
+
 });
 
-});
+panel.innerHTML="";
 
-panel.innerHTML = "";
+Object.entries(grupos).forEach(([insumo,folios])=>{
 
-const maxCols = 10;
-
-Object.entries(grupos).forEach(([insumo, folios]) => {
-
-let html = `
+let html=`
+<h3>${insumo}</h3>
 <table>
-
 <thead>
 <tr>
-<th colspan="${maxCols}">${insumo}</th>
+<th>Folio</th>
+<th>Disponible</th>
 </tr>
 </thead>
-
 <tbody>
 `;
 
-for(let i = 0; i < folios.length; i++){
+folios.forEach(f=>{
 
-if(i % maxCols === 0) html += "<tr>";
-
-html += `
-<td>
-${folios[i].folio}
-<br>
-<small>${folios[i].disponible} ${folios[i].unidad || ""}</small>
-</td>
+html+=`
+<tr>
+<td>${f.folio}</td>
+<td>${f.disponible}</td>
+</tr>
 `;
 
-if(i % maxCols === maxCols - 1) html += "</tr>";
+});
 
-}
+html+=`</tbody></table><br>`;
 
-if(folios.length % maxCols !== 0) html += "</tr>";
-
-html += "</tbody></table>";
-
-panel.innerHTML += html;
+panel.innerHTML+=html;
 
 });
 
@@ -270,81 +266,82 @@ panel.innerHTML += html;
 
 /* ===============================
 MOVIMIENTOS
-================================ */
+=============================== */
 
-async function cargarMovimientosGeosis(){
+async function cargarMovimientos(){
 
-const cont = document.getElementById("movGeosis");
-const filtro = document.getElementById("buscarFolio")?.value.trim();
+const cont=document.getElementById("movGeosis");
 
-cont.innerHTML = "Cargando...";
+const filtro=document
+.getElementById("buscarFolio")
+.value
+.trim();
 
-let query = supa
+let query=supa
 .from("vw_movimientos_geosis_jurisdiccion")
 .select("*")
-.eq("id_almacen", idAlmacen)
+.eq("id_almacen",idAlmacen)
 .order("nombre_insumo")
 .order("folio")
 .order("fecha");
 
-if(filtro && filtro.length > 0){
-query = query.ilike("folio", `%${filtro}%`);
+if(filtro){
+query=query.ilike("folio",`%${filtro}%`);
 }
 
-const {data,error} = await query;
+const {data,error}=await query;
 
 if(error){
-cont.innerHTML="Error al cargar movimientos";
+cont.innerHTML="Error cargando movimientos";
 return;
 }
 
-if(!data || data.length===0){
-cont.innerHTML="<p>No hay movimientos registrados.</p>";
-return;
-}
+/* KPI */
 
-/* ===============================
-AGRUPAR POR INSUMO -> FOLIO
-================================ */
+document.getElementById("totalMov").innerText=data.length;
 
-const grupos = {};
+/* agrupar */
+
+const grupos={};
 
 data.forEach(m=>{
 
-if(!grupos[m.nombre_insumo]){
-grupos[m.nombre_insumo] = {};
-}
+if(!grupos[m.nombre_insumo])
+grupos[m.nombre_insumo]={};
 
-if(!grupos[m.nombre_insumo][m.folio]){
-grupos[m.nombre_insumo][m.folio] = [];
-}
+if(!grupos[m.nombre_insumo][m.folio])
+grupos[m.nombre_insumo][m.folio]=[];
 
 grupos[m.nombre_insumo][m.folio].push(m);
 
 });
 
-/* ===============================
-RENDER
-================================ */
+/* render */
 
 cont.innerHTML="";
 
+
 Object.entries(grupos).forEach(([insumo,folios])=>{
 
-let totalInsumo = 0;
+let totalInsumo=0;
 
-let html = `
+let html=`
 <div class="card">
-<h3>${insumo}</h3>
+
+<div class="cardHeader" onclick="toggleCard(this)">
+<span class="flecha">▶</span>
+<span>${insumo}</span>
+</div>
+
+<div class="cardBody">
 `;
 
 Object.entries(folios).forEach(([folio,movs])=>{
 
-let totalFolio = 0;
+let totalFolio=0;
 
-html += `
+html+=`
 <table>
-
 <thead>
 <tr>
 <th colspan="4">Folio ${folio}</th>
@@ -356,56 +353,82 @@ html += `
 <th>Operativo</th>
 </tr>
 </thead>
-
 <tbody>
 `;
 
 movs.forEach(m=>{
 
-totalFolio += Number(m.cantidad);
+totalFolio+=Number(m.cantidad||0);
 
-html += `
+html+=`
 <tr>
 <td>${new Date(m.fecha).toLocaleDateString()}</td>
 <td>${m.tipo_operativo}</td>
 <td>${m.cantidad}</td>
-<td>${m.folio_operativo || "-"}</td>
+<td>${m.folio_operativo||""}</td>
 </tr>
 `;
 
 });
 
-html += `
-<tr style="font-weight:bold;background:#f5f7fa">
-<td colspan="2">Total folio ${folio}</td>
+html+=`
+<tr style="font-weight:bold;background:#f4f6f9">
+<td colspan="2">Total folio</td>
 <td>${totalFolio}</td>
 <td></td>
 </tr>
 `;
 
-html += `</tbody></table><br>`;
+html+=`</tbody></table><br>`;
 
-totalInsumo += totalFolio;
+totalInsumo+=totalFolio;
 
 });
 
-html += `
-<div style="text-align:right;font-weight:bold">
+html+=`
+<div style="font-weight:bold">
 Total ${insumo}: ${totalInsumo}
+</div>
 </div>
 </div>
 `;
 
-cont.innerHTML += html;
+cont.innerHTML+=html;
+
 
 });
 
+/* total general */
 }
 
 
 /* ===============================
+COLAPSAR CARD
+=============================== */
+
+function toggleCard(el){
+
+const card=el.parentElement;
+
+card.classList.toggle("abierto");
+
+}
+
+window.toggleCard=toggleCard;
+
+
+/* ===============================
+BUSCADOR
+=============================== */
+
+document
+.getElementById("buscarFolio")
+.addEventListener("input",cargarMovimientos);
+
+
+/* ===============================
 FORMULARIO
-================================ */
+=============================== */
 
 async function abrirFormulario(lote,insumo){
 
@@ -438,31 +461,60 @@ ${f.folio}
 
 });
 
-document.getElementById("panelFormulario").classList.add("abierto");
+document
+.getElementById("panelFormulario")
+.classList.add("abierto");
 
 }
+
 window.abrirFormulario=abrirFormulario;
 
 
 /* ===============================
-GUARDAR MOVIMIENTO
-================================ */
+CERRAR MODAL
+=============================== */
 
-document.getElementById("formGasto").addEventListener("submit",async e=>{
+function cerrarFormulario(){
+
+document
+.getElementById("panelFormulario")
+.classList.remove("abierto");
+
+}
+
+window.cerrarFormulario=cerrarFormulario;
+
+
+/* ===============================
+GUARDAR MOVIMIENTO
+=============================== */
+
+document
+.getElementById("formGasto")
+.addEventListener("submit",async e=>{
 
 e.preventDefault();
 
-const folio=parseInt(document.getElementById("folioSelect").value);
-const cantidad=Number(document.getElementById("cantidadGasto").value);
-const fecha=document.getElementById("fechaGasto").value;
+const folio=parseInt(
+document.getElementById("folioSelect").value
+);
+
+const cantidad=Number(
+document.getElementById("cantidadGasto").value
+);
+
+const fecha=document
+.getElementById("fechaGasto").value;
 
 const payload={
+
 folio:folio,
 nombre_insumo:loteSeleccionado.insumo,
 cantidad:cantidad,
 fecha:fecha,
 tipo_operativo:"SALIDA",
 origen:"interno"
+
 };
 
 const {error}=await supa
@@ -474,32 +526,14 @@ alert(error.message);
 return;
 }
 
-alert("Gasto registrado");
+alert("Movimiento registrado");
+
+cerrarFormulario();
 
 document.getElementById("formGasto").reset();
 
-document
-.getElementById("panelForm")
-.classList.remove("abierto");   
-
-cargarInventario();
-cargarFolios();
-cargarMovimientosGeosis();
-
-
-});
-
-
-document
-.getElementById("buscarFolio")
-.addEventListener("input",cargarMovimientosGeosis);
-
-/* ===============================
-INIT
-================================ */
-
-document.addEventListener("DOMContentLoaded", () => {
-
-obtenerAlmacenUsuario();
+await cargarInventario();
+await cargarFolios();
+await cargarMovimientos();
 
 });

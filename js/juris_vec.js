@@ -234,14 +234,7 @@ Object.entries(grupos).forEach(([insumo,folios])=>{
 
 let html=`
 <h3>${insumo}</h3>
-<table>
-<thead>
-<tr>
-<th>Folio</th>
-<th>Disponible</th>
-</tr>
-</thead>
-<tbody>
+<div class="foliosGrid">
 `;
 
 folios.forEach(f=>{

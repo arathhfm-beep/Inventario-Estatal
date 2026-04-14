@@ -240,10 +240,10 @@ let html=`
 folios.forEach(f=>{
 
 html+=`
-<tr>
-<td>${f.folio}</td>
-<td>${f.disponible}</td>
-</tr>
+<div class="folioCard">
+  <div class="folioNumero">${f.folio}</div>
+  <div class="folioCantidad">${f.disponible}</div>
+</div>
 `;
 
 });

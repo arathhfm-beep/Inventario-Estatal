@@ -126,8 +126,8 @@ lote:f.lote,
 cantidad:0,
 stock:0,
 presentacion:f.description,
-origen:f.origen
-
+origen:f.origen,
+unidad:f.unidad_medida
 };
 
 }
@@ -170,7 +170,7 @@ tbody.innerHTML+=`
 
 <td>${r.lote}</td>
 
-<td>${r.cantidad}</td>
+<td>${r.cantidad} ${r.unidad}</td>
 
 <td>${r.stock}</td>
 
@@ -241,8 +241,8 @@ folios.forEach(f=>{
 
 html+=`
 <div class="folioCard">
-  <div class="folioNumero">${f.folio}</div>
-  <div class="folioCantidad">${f.disponible}</div>
+  <div class="folioNumero">Folio: ${f.folio}</div>
+  <div class="folioCantidad">${f.disponible} ${f.unidad_medida}</div>
 </div>
 `;
 
